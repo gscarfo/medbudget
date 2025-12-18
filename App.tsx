@@ -59,14 +59,26 @@ const App: React.FC = () => {
   const loadInitialData = async () => {
     setIsLoading(true);
     setError(null);
+    
+    // Timeout di sicurezza per evitare caricamenti infiniti (pagina bianca)
+    const timeout = setTimeout(() => {
+      if (isLoading) {
+        setError("La connessione alla VPS ha impiegato troppo tempo. Verifica che il database sia raggiungibile e che l'IP di Vercel non sia bloccato dal firewall.");
+        setIsLoading(false);
+      }
+    }, 15000);
+
     try {
-      const prof = await apiService.getProfile();
-      const trans = await apiService.getTransactions();
+      const [prof, trans] = await Promise.all([
+        apiService.getProfile(),
+        apiService.getTransactions()
+      ]);
       setProfile(prof);
       setTransactions(trans);
+      clearTimeout(timeout);
     } catch (err: any) {
       console.error("Errore nel caricamento dati:", err);
-      setError("Impossibile connettersi al database sulla tua VPS. Verifica la configurazione di DATABASE_URL su Vercel.");
+      setError("Impossibile connettersi al database PostgreSQL. Controlla le variabili d'ambiente (DATABASE_URL) su Vercel e le impostazioni della tua VPS.");
     } finally {
       setIsLoading(false);
     }
@@ -147,7 +159,7 @@ const App: React.FC = () => {
       const saved = await apiService.saveProfile(registrationData);
       setProfile(saved);
     } catch (err) {
-      alert("Errore durante la registrazione del profilo.");
+      alert("Errore durante la registrazione del profilo. Verifica la connessione al DB.");
     } finally {
       setIsLoading(false);
     }
@@ -166,6 +178,7 @@ const App: React.FC = () => {
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
         <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
         <p className="text-slate-500 font-medium">Connessione alla tua VPS in corso...</p>
+        <p className="text-xs text-slate-400 mt-2">Tentativo di accesso a PostgreSQL...</p>
       </div>
     );
   }
@@ -177,11 +190,20 @@ const App: React.FC = () => {
           <AlertCircle className="w-16 h-16 text-rose-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-slate-800 mb-2">Errore di Connessione</h2>
           <p className="text-slate-500 mb-6 text-sm">{error}</p>
+          <div className="bg-slate-50 p-4 rounded-xl text-left mb-6 text-xs text-slate-600 border border-slate-100">
+            <strong>Checklist Pro:</strong>
+            <ul className="list-disc ml-4 mt-2 space-y-1">
+              <li>Configura <code>DATABASE_URL</code> su Vercel.</li>
+              <li>Consenti connessioni esterne su <code>postgresql.conf</code>.</li>
+              <li>Aggiungi l'IP di Vercel (o 0.0.0.0 per test) su <code>pg_hba.conf</code>.</li>
+              <li>Apri la porta 5432 nel firewall della VPS.</li>
+            </ul>
+          </div>
           <button 
             onClick={loadInitialData}
             className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold mx-auto hover:bg-blue-700 transition-all"
           >
-            <RefreshCw className="w-4 h-4" /> Riprova
+            <RefreshCw className="w-4 h-4" /> Riprova Caricamento
           </button>
         </div>
       </div>
@@ -206,7 +228,7 @@ const App: React.FC = () => {
             </div>
             <input required type="text" placeholder="Specializzazione" value={registrationData.specialization} onChange={e => setRegistrationData({...registrationData, specialization: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" />
             <input required type="text" placeholder="Nome Studio" value={registrationData.studioName} onChange={e => setRegistrationData({...registrationData, studioName: e.target.value})} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" />
-            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95">Collega Studio alla VPS</button>
+            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition-all active:scale-95">Salva Profilo su VPS</button>
           </form>
         </div>
       </div>
@@ -236,7 +258,7 @@ const App: React.FC = () => {
 
       <main className="flex-1 md:ml-64 p-4 md:p-8">
         <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-          <div><h1 className="text-2xl font-bold text-slate-800">Dashboard {profile.studioName}</h1><p className="text-slate-500">Analisi finanziaria in tempo reale.</p></div>
+          <div><h1 className="text-2xl font-bold text-slate-800">Dashboard {profile.studioName}</h1><p className="text-slate-500">Analisi finanziaria in tempo reale via VPS.</p></div>
           <button onClick={() => setIsFormOpen(true)} className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-blue-100 transition-all active:scale-95 hover:bg-blue-700">
             <PlusCircle className="w-5 h-5" /> Nuovo Movimento
           </button>
@@ -338,7 +360,7 @@ const App: React.FC = () => {
                     </tr>
                   ))}
                   {transactions.length === 0 && (
-                    <tr><td colSpan={3} className="py-20 text-center text-slate-400 text-sm italic">Nessun movimento registrato.</td></tr>
+                    <tr><td colSpan={3} className="py-20 text-center text-slate-400 text-sm italic">Nessun movimento registrato nel DB.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -352,7 +374,7 @@ const App: React.FC = () => {
                 <Lightbulb size={40} />
              </div>
              <h2 className="text-2xl font-bold text-slate-800 mb-4">Analisi Predittiva</h2>
-             <p className="text-slate-500 max-w-lg mx-auto mb-8">Usa il pulsante "Analizza" nella Dashboard per attivare l'intelligenza artificiale di Gemini e ricevere consigli sulla gestione dello studio.</p>
+             <p className="text-slate-500 max-w-lg mx-auto mb-8">Usa il pulsante "Analizza" nella Dashboard per attivare l'intelligenza artificiale di Gemini e ricevere consigli sulla gestione dello studio basati sui dati della tua VPS.</p>
              <button onClick={() => setActiveTab('dashboard')} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-700">Torna alla Dashboard</button>
           </div>
         )}
@@ -362,20 +384,21 @@ const App: React.FC = () => {
             <h2 className="text-2xl font-bold text-slate-800 mb-8">Impostazioni Profilo</h2>
             <div className="space-y-6 max-w-md">
                <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                  <p className="text-xs font-bold text-slate-400 uppercase mb-2">Dati correnti (su VPS)</p>
+                  <p className="text-xs font-bold text-slate-400 uppercase mb-2">Connessione Database</p>
+                  <p className="text-xs text-slate-500 mb-4">L'applicazione è collegata correttamente alla VPS esterna.</p>
                   <p className="text-sm font-bold text-slate-800">{profile.firstName} {profile.lastName}</p>
                   <p className="text-sm text-slate-500 italic">{profile.specialization}</p>
                   <p className="text-sm font-medium text-blue-600 mt-2">{profile.studioName}</p>
                </div>
                <button 
                   onClick={() => {
-                    if(confirm("Sei sicuro di voler uscire? Dovrai riconfigurare il profilo.")) {
-                      window.location.reload();
+                    if(confirm("Vuoi ricaricare i dati?")) {
+                      loadInitialData();
                     }
                   }}
-                  className="text-sm text-rose-500 font-bold hover:underline"
+                  className="text-sm text-blue-600 font-bold hover:underline"
                >
-                 Esci dalla sessione
+                 Aggiorna Connessione
                </button>
             </div>
           </div>
