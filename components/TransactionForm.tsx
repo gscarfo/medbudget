@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { TransactionType, Transaction } from '../types';
-import { CATEGORIES } from '../constants';
+import { TransactionType, Transaction } from '../types.ts';
+import { CATEGORIES } from '../constants.tsx';
 import { X, Plus } from 'lucide-react';
 
 interface TransactionFormProps {

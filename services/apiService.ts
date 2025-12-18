@@ -1,5 +1,5 @@
 
-import { Transaction, DoctorProfile } from '../types';
+import { Transaction, DoctorProfile } from '../types.ts';
 
 export const apiService = {
   async getProfile(): Promise<DoctorProfile | null> {

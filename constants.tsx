@@ -12,7 +12,7 @@ import {
   PlusCircle,
   Lightbulb
 } from 'lucide-react';
-import { Transaction, TransactionType } from './types';
+import { Transaction, TransactionType } from './types.ts';
 
 export const CATEGORIES = {
   INCOME: [
