@@ -13,6 +13,12 @@ export interface Transaction {
   description: string;
 }
 
+export interface CategoryTotal {
+  name: string;
+  value: number;
+  color?: string;
+}
+
 export interface BudgetSummary {
   totalIncome: number;
   totalExpenses: number;
@@ -23,6 +29,7 @@ export interface AIInsight {
   title: string;
   content: string;
   type: 'success' | 'warning' | 'info';
+  category?: string;
 }
 
 export interface DoctorProfile {
@@ -30,4 +37,20 @@ export interface DoctorProfile {
   lastName: string;
   specialization: string;
   studioName: string;
+}
+
+export interface User {
+  id: string;
+  username: string;
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+  hasProfile: boolean;
+}
+
+export interface HealthStatus {
+  status: 'online' | 'offline' | 'latency';
+  latency?: number;
 }
