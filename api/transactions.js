@@ -1,9 +1,8 @@
+import pool from './db.js'; // Nota l'estensione .js!
 
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import pool from './db';
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const userId = req.headers['x-user-id'] as string;
+export default async function handler(req, res) {
+  // Legge l'ID utente dagli headers (assicurati che il frontend lo invii!)
+  const userId = req.headers['x-user-id'];
 
   if (!userId) {
     return res.status(401).json({ error: 'Utente non autenticato' });
@@ -22,6 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }));
       return res.status(200).json(transactions);
     } catch (error) {
+      console.error(error);
       return res.status(500).json({ error: 'Errore nel recupero dei movimenti' });
     }
   }
@@ -35,7 +35,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       );
       return res.status(201).json(result.rows[0]);
     } catch (error) {
+      console.error(error);
       return res.status(500).json({ error: 'Errore nel salvataggio del movimento' });
     }
   }
+  
+  // Se il metodo non è né GET né POST
+  return res.status(405).json({ error: 'Metodo non consentito' });
 }
