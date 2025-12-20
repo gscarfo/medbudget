@@ -5,4 +5,4 @@ RUN npm install
 COPY . .
 RUN npm run build
 EXPOSE 3000
-CMD ["npx", "vite", "preview", "--port", "3000", "--host"]
+CMD ["node", "server.js"]
