@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "vite preview --port $PORT --host",  <-- AGGIUNTA FONDAMENTALE
+    "start": "vite preview --port $PORT --host",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -17,7 +17,7 @@
     "lucide-react": "^0.561.0",
     "@vercel/node": "^5.5.15",
     "pg": "^8.16.3",
-    "vite": "^6.2.0"   <-- SPOSTATO QUI (IMPORTANTE)
+    "vite": "^6.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
