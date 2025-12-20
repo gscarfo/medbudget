@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "vite preview --port $PORT --host",
+    "start": "vite preview --port $PORT --host",  <-- AGGIUNTA FONDAMENTALE
     "preview": "vite preview"
   },
   "dependencies": {
@@ -16,12 +16,12 @@
     "@google/genai": "^1.34.0",
     "lucide-react": "^0.561.0",
     "@vercel/node": "^5.5.15",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "vite": "^6.2.0"   <-- SPOSTATO QUI (IMPORTANTE)
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "typescript": "~5.8.2"
   }
 }
